@@ -1,0 +1,49 @@
+<title>和苑帮</title>
+<div th:replace="public/header::html" ></div>  
+</head>
+
+<body ontouchstart class="page-bg">
+
+
+<ul th:each="express:${expressList}" class="weui-payrec">
+    <div class="weui-pay-m">
+        <li class="weui-pay-order">
+            <dl class="weui-pay-line">
+                <dd class="weui-pay-name" th:text="${express.area}"></dd>
+                <dt class="weui-pay-label">订 单 号：</dt><dd class="weui-pay-e" th:text="${express.tradeNo}"></dd>
+            </dl>
+            <dl class="weui-pay-line"><dt class="weui-pay-label">收件人：</dt><dd class="weui-pay-e" th:text="${express.name}"></dd></dl>
+            <dl class="weui-pay-line"><dt class="weui-pay-label">手机号码：</dt><dd class="weui-pay-e" th:text="${express.phone}"></dd></dl>
+            <dl class="weui-pay-line"><dt class="weui-pay-label">房间号：</dt><dd class="weui-pay-e" th:text="${express.room}"></dd></dl>
+            <dl class="weui-pay-line"><dt class="weui-pay-label">预约时间：</dt><dd class="weui-pay-e" th:text="${express.time}"></dd></dl>
+            <dl class="weui-pay-line"><dt class="weui-pay-label">应付金额：</dt><dd class="weui-pay-e" th:text="${express.cost}"></dd></dt><dd class="weui-pay-e">元</dd></dl>
+
+            <div th:id="${express.tradeNo}" class="weui-pay-area">
+            	<!-- <a href="javascript:void(0)" onclick="pay()" class="weui-pay-c">取消订单</a> -->
+            	<a href='javascript:void(0)' th:id="${express.tradeNo}+'no'"  class="weui-pay-c" style="color:red">立即付款</a>
+	           	<script th:inline="javascript"> 
+	           		var tradeNo = [[${express.tradeNo}]]+'no';
+	                if([[${express.paid}]] == 1){
+	                	document.getElementById(tradeNo).style.color = "green";
+	                	document.getElementById(tradeNo).text = "已付款";
+	                	
+	                }else {
+	                	document.getElementById(tradeNo).style.color = "red";
+	                	document.getElementById(tradeNo).text = "立即支付";
+	                	document.getElementById(tradeNo).onclick = function() {
+	                		pay([[${express.cost}]],[[${express.tradeNo}]]);
+	                	};	
+	                }
+	                function pay(cost, tradeNo) {
+	            		window.location.assign("/express/order?price="+cost+"&tradeNo="+tradeNo);
+	            	}
+	            </script>
+            </div>
+        </li>
+    </div>
+</ul>
+<br>
+<br>
+
+</body>
+</html>

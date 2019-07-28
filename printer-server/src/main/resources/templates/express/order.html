@@ -1,0 +1,59 @@
+<title>和苑帮</title>
+<div th:replace="public/header::html" ></div>  
+</head>
+<script th:inline="javascript">
+	function onBridgeReady(){
+	   WeixinJSBridge.invoke(
+	      'getBrandWCPayRequest', {
+	         appId:[[${paySign.appId}]],     //公众号名称，由商户传入     
+	         timeStamp:[[${paySign.timeStamp}]],         //时间戳，自1970年以来的秒数     
+	         nonceStr:[[${paySign.nonceStr}]], //随机串     
+	         package:[[${paySign.package}]],     
+	         signType:"MD5",         //微信签名方式：     
+	         paySign:[[${paySign.paySign}]] //微信签名 
+	      },
+	      function(res){
+		      if(res.err_msg == "get_brand_wcpay_request:ok" ){
+		      		// 使用以上方式判断前端返回,微信团队郑重提示：
+		            //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
+	                $.alert("为了更好的服务，请在预约时间段内等候上门，谢谢配合","支付成功",function(){
+	                    return window.location.assign("/express/expressRecord?openId="+[[${openId}]]+"&tradeNo="+[[${tradeNo}]]);
+	                });
+		      }else {
+		    	  $.alert("请检查手机网络后重试","支付失败",function(){
+	                    return window.location.assign("/express/index");
+	                });
+		      }
+	   	  }
+	   ); 
+	}
+ /* 	if (typeof WeixinJSBridge == "undefined"){
+	   if( document.addEventListener ){
+	       document.addEventListener('WeixinJSBridgeReady', onBridgeReady, false);
+	   }else if (document.attachEvent){
+	       document.attachEvent('WeixinJSBridgeReady', onBridgeReady); 
+	       document.attachEvent('onWeixinJSBridgeReady', onBridgeReady);
+	   }
+	}else{
+	   onBridgeReady();
+	} */
+</script>
+<body>
+	<div class="weui-form-preview">
+	  <div class="weui-form-preview__hd">
+	    <label class="weui-form-preview__label">付款金额</label>
+	    <em class="weui-form-preview__value" th:text="${price}">¥100.00</em>
+	  </div>
+	  <div class="weui-form-preview__bd">
+	    <div class="weui-form-preview__item">
+	      <label class="weui-form-preview__label">商品</label>
+	      <span class="weui-form-preview__value">代取快递服务费</span>
+	    </div>
+	  </div>
+	  <div class="weui-form-preview__ft">
+	   <!--  <a class="weui-form-preview__btn weui-form-preview__btn_default" href="#" onClick=”javascript :history.go(-1);>返回修改</a> -->
+	    <button type="submit" class="weui-form-preview__btn weui-form-preview__btn_primary" onclick="onBridgeReady()">付款</button>
+	  </div>
+	</div>
+</body>
+</html>

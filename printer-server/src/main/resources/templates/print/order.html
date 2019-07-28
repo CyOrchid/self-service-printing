@@ -1,0 +1,52 @@
+<div th:replace="public/header::html" ></div>  
+</head>
+<script th:inline="javascript">
+	function onBridgeReady(){
+	   WeixinJSBridge.invoke(
+	      'getBrandWCPayRequest', {
+	         appId:[[${paySign.appId}]],     //公众号名称，由商户传入     
+	         timeStamp:[[${paySign.timeStamp}]],         //时间戳，自1970年以来的秒数     
+	         nonceStr:[[${paySign.nonceStr}]], //随机串     
+	         package:[[${paySign.package}]],     
+	         signType:"MD5",         //微信签名方式：     
+	         paySign:[[${paySign.paySign}]] //微信签名 
+	      },
+	      function(res){
+		      if(res.err_msg == "get_brand_wcpay_request:ok" ){
+		      		// 使用以上方式判断前端返回,微信团队郑重提示：
+		            //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
+		            alert("正在打印，请及时取走打印文件");
+		      } 
+	   	  }
+	   ); 
+	}
+ /* 	if (typeof WeixinJSBridge == "undefined"){
+	   if( document.addEventListener ){
+	       document.addEventListener('WeixinJSBridgeReady', onBridgeReady, false);
+	   }else if (document.attachEvent){
+	       document.attachEvent('WeixinJSBridgeReady', onBridgeReady); 
+	       document.attachEvent('onWeixinJSBridgeReady', onBridgeReady);
+	   }
+	}else{
+	   onBridgeReady();
+	} */
+</script>
+<body>
+	<div class="weui-form-preview">
+	  <div class="weui-form-preview__hd">
+	    <label class="weui-form-preview__label">付款金额</label>
+	    <em class="weui-form-preview__value" th:text="${price}">¥2400.00</em>
+	  </div>
+	  <div class="weui-form-preview__bd">
+	    <div class="weui-form-preview__item">
+	      <label class="weui-form-preview__label">商品</label>
+	      <span class="weui-form-preview__value">电动打蛋机</span>
+	    </div>
+	  </div>
+	  <div class="weui-form-preview__ft">
+	    <a class="weui-form-preview__btn weui-form-preview__btn_default" href="javascript:">返回修改</a>
+	    <button type="submit" class="weui-form-preview__btn weui-form-preview__btn_primary" onclick="onBridgeReady()">付款</button>
+	  </div>
+	</div>
+</body>
+</html>

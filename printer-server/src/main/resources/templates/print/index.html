@@ -1,0 +1,305 @@
+<div th:replace="public/header::html" ></div>  
+
+<script th:inline="javascript">
+
+ /* alert(location.href.split('#')[0]);  */
+    wx.config({
+        debug: false,
+        appId: [[${configSign.appId}]],
+        timestamp:[[${configSign.timestamp}]],
+        nonceStr: [[${configSign.nonceStr}]],
+        signature:[[${configSign.signature}]],
+        jsApiList:[[${jsApiList}]]
+    });
+    wx.ready(function () {
+    	
+        wx.getLocation({
+        	type: 'wgs84', 
+            success: function (res) {
+            	var latitude = res.latitude; 
+                var longitude = res.longitude; 
+                var speed = res.speed; 
+                var accuracy = res.accuracy; 
+                var userLocation = '[[${userLocation}]]';
+           	 	$.post(
+                      "/selectStation",
+                      {
+                          latitude:latitude,
+                          longitude:longitude,
+                      },
+                      function(data,status){
+                      	$("#printerCode").val(data.printerCode);
+                      	$(".print-addr").text(data.name);
+                      	$(".print-desc").text(data.location);
+                      }
+               );  
+            }
+        });
+    });
+
+    
+    function scan() {
+        wx.scanQRCode({
+        	needResult: 1, 
+            scanType: ["qrCode","barCode"], 
+            success: function (res) {
+                var result = res.resultStr; 
+                var userLocation = JSON.parse($.cookie("userLocation"));
+                alert(userLocation.id);
+                 $.post(
+                    "/selectStation",
+                    {
+                    	userLocationId:userLocation.id,
+                    },
+                    function (data,status) {
+                        alert(data);
+                    }
+                ); 
+
+            }
+        });
+    }
+
+</script>
+</head>
+<body>
+	<div class="weui-panel__bd">
+        <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg">
+            <div class="weui-media-box__hd">
+                <img class="weui-media-box__thumb" th:src="${userInfo.headimgurl}" alt="">
+            </div>
+            <div class="weui-media-box__bd">
+                <h4 class="weui-media-box__title" th:text="${userInfo.nickname}"></h4>
+                <p class="weui-media-box__desc"></p>
+            </div>
+        </a>
+    </div>
+    <div class="weui-media-box__bd">
+        <h4 class="weui-media-box__title print-addr" ></h4>
+        <p class="weui-media-box__desc print-desc"></p>
+    </div>
+    <div class="weui-cells weui-cells_checkbox">
+         <form id="printForm" >
+         	<input id="printerCode" type="text" style="display: none" name="printerCode"/>
+         	<input  type="text" style="display: none" name="tradeNo" />
+         	<div id="print"></div>
+         </form>
+    </div>
+    
+    <div style="width:50%;margin:auto;margin-top:10px;">
+    	<input id="uploadFile" style="display: none" type="file" name="file" multiple="multiple" />
+	    <a class="weui-btn weui-btn_plain-primary" onclick="addFile()">添加文档</a>
+    </div>
+      
+    <button id="formSubmitBtn" class="weui-btn weui-btn_disabled weui-btn_primary" style="width:50%!important;margin-top:10px;">确认提交</button>
+    
+    
+</body>
+<script th:inline="javascript">
+
+	var filePathArr = [];
+	var totalPay;
+	
+	function addFile() {
+		//支付页点击返回，则重新生成订单号
+		var checkBoxNum = $('.weui-check').length;
+		if(checkBoxNum == 0) {
+			$("input[name='tradeNo']").val(createTradeNo());
+		}
+		$("#uploadFile").click();
+	}
+	
+	function countPages() {
+		var countPages = 0;
+		totalPay = 0;
+		
+		var ddd = $('.weui-switch');
+		if(ddd.length != 0) {
+			$.each(ddd, function(){
+				var id = $(this).attr("relate");
+				var checked = $("#"+id).is(":checked");
+				if(!checked) {
+					return false;
+				}
+				var attr = $("#"+id).val();
+				var pages = $("#"+id).attr("pages");
+				
+				var printAttr = attr.split("*");
+				
+				if($(this).attr("name") == "double") {
+					if($(this).is(":checked")) {
+						var r = printAttr[0] +'*'+ replaceChat(printAttr[1], 0, 'Y');
+						totalPay += parseInt(pages)*12.5;
+					} else {
+						var r = printAttr[0] +'*'+ replaceChat(printAttr[1], 0, 'N');
+						totalPay += parseInt(pages)*15;
+					}
+					$("#"+id).val(r);
+				}
+				if($(this).attr("name") == "color") {
+					if($(this).is(":checked")) {
+						var r = printAttr[0] +'*'+ replaceChat(printAttr[1], 2, 'Y');
+						totalPay += parseInt(pages)*100;
+					} else {
+						var r = printAttr[0] +'*'+ replaceChat(printAttr[1], 2, 'N');
+					}
+					$("#"+id).val(r);
+				} 
+			});
+		}
+		
+		var checked = $('.weui-check:checked');
+		if(checked.length != 0) {
+			$.each(checked, function(){
+				var pages = $(this).attr("pages");
+				var filePath = $(this).attr("value");
+				countPages += parseInt(pages);
+				filePathArr.push(filePath);
+			});
+		}
+		if(countPages != 0) {
+			totalPay = countPages * 30;	//每张30分钱
+			//alert(totalPay);
+			$("#formSubmitBtn").removeClass("weui-btn_disabled");
+			$("#formSubmitBtn").attr("disabled", false);
+		}else {
+			$("#formSubmitBtn").addClass("weui-btn_disabled");
+			$("#formSubmitBtn").attr("disabled", true);
+		}
+		
+	}
+	
+	$(document).ready(function() {
+		
+		
+		$("#print").on("change", function(){
+			countPages();
+		});
+		
+		$("#formSubmitBtn").on("click", function() {
+			$.post("/print/prePrint", $("#printForm").serialize(), function(data) {
+				
+			});
+			var printedCode = $("#printerCode").val();
+			var tradeNo = $("input[name='tradeNo']").val();
+			window.location.assign("/print/order?price="+totalPay+"&openId="+ [[${userInfo.openid}]] + "&printerCode="+ printedCode +"&tradeNo=" + tradeNo);
+		});
+		
+		$("#uploadFile").on("change", function(){
+			var files = document.getElementById("uploadFile").files;
+			var formFile = new FormData();
+			Array.from(files).forEach(function(i, index){
+				formFile.append("file", i);
+			});
+			formFile.append("userName", [[${userInfo.openid}]]);
+			
+			$.showLoading("文档解析中...");
+			$.ajax({
+	            url: "/uploadFile",
+	            data: formFile,
+	            type: "Post",
+	            dataType: "json",
+	            cache: false,//上传文件无需缓存
+	            processData: false,//用于对data参数进行序列化处理 这里必须false
+	            contentType: false, //必须
+	            success: function (result) {
+	            	$.hideLoading();
+	                Array.from(result).forEach(function(i, index){
+	                	$("#print").prepend(
+	                		'<div>'+
+		              			'<label class="weui-cell weui-check__label " for='+i.fileName.replace('.','')+'>'+
+		                           '<div class="weui-cell__hd">'+
+		                          		'<input id='+i.fileName.replace('.','')+' style="display: none" type="checkbox" class="weui-check" name="filePath" value='+i.relativePath+'*'+'Y'+'|'+'N'+'|'+'1'+' pages='+i.pages+' checked="checked">'+
+		                           		'<i class="weui-icon-checked"></i>'+
+			                        '</div>'+
+			                        '<div class="weui-cell__bd">'+i.fileName+'   页数：'+i.pages+'</div>'+
+			                     '</label>'+
+			                     '<div class="weui-flex">'+
+				                     '<div class="weui-flex__item">'+
+				                         '<div class="weui-cell weui-cell_switch">'+
+				                                 '<div class="weui-cell__bd">双面</div>'+
+				                                 '<div class="weui-cell__ft">'+
+				                                    '<input class="weui-switch" type="checkbox" name="double" relate='+i.fileName.replace('.','')+' checked="checked">'+
+				                                 '</div>'+
+				                         '</div>'+
+				                     '</div>'+
+				                     '<div class="weui-flex__item">'+
+			                             '<div class="weui-cell weui-cell_switch">'+
+			                                 '<div class="weui-cell__bd">彩印</div>'+
+			                                 '<div class="weui-cell__ft">'+
+			                                      '<input class="weui-switch" type="checkbox" name="color" relate='+i.fileName.replace('.','')+'>'+
+			                                 '</div>'+
+			                             '</div>'+
+				                     '</div>'+
+				                     '<div class="weui-flex__item">'+
+				                     '<div class="weui-cell weui-cell_switch">'+
+				                     	'<div class="weui-count">'+
+				                     		'<a class="weui-count__btn weui-count__decrease btnDecrease'+i.fileName.replace('.','')+'"></a>'+
+				                     		'<input class="weui-count__number printPage'+i.fileName.replace('.','')+'" type="number" value="1">'+
+				                     		'<a class="weui-count__btn weui-count__increase btnIncrease'+i.fileName.replace('.','')+'"></a>'+
+				                   		'</div>'+
+				                     '</div>'+
+				                     '</div>'+
+				                 '</div>'+
+		                     '</div>'
+	                    );
+	                	var MAX = 99, MIN = 1;
+	                	$('.btnDecrease'+i.fileName.replace('.','')).click(function (e) {
+	                	  var $input = $(e.currentTarget).parent().find('.printPage'+i.fileName.replace('.',''));
+	                	  var number = parseInt($input.val() || "0") - 1
+	                	  if (number < MIN) number = MIN;
+	                	  $input.val(number)
+	                	})
+	                	$('.btnIncrease'+i.fileName.replace('.','')).click(function (e) {
+	                	  var $input = $(e.currentTarget).parent().find('.printPage'+i.fileName.replace('.',''));
+	                	  var number = parseInt($input.val() || "0") + 1
+	                	  if (number > MAX) number = MAX;
+	                	  $input.val(number)
+	                	})
+	                });
+	                countPages();
+	            }
+	        });
+		});
+		
+	});
+	
+	//生成19位订单号
+	function createTradeNo() {
+		var tradeNo = "";
+		var date =  new Date();
+		var year = date.getFullYear();
+		var month = date.getMonth()+1;
+		var day = date.getDate();
+		if(month<10) month = "0"+month;
+		if(day<10) day = "0"+day;
+		var hours = date.getHours();
+		var mins = date.getMinutes();
+		var secs = date.getSeconds();
+		var msecs = date.getMilliseconds();
+		if(hours<10) hours = "0"+hours;
+		if(mins<10) mins = "0"+mins;
+		if(secs<10) secs = "0"+secs;
+		if(msecs<10) msecs = "00"+msecs;
+		if(msecs<100) msecs = "0"+msecs;
+		
+		for(var i=0; i<2; i++) {
+			tradeNo += Math.floor(Math.random()*10);
+		}
+		tradeNo = ""+year+month+day+hours+mins+secs+msecs+tradeNo;
+		return tradeNo;
+
+	}
+	
+	function replaceChat(source,pos,newChar){
+	     if(pos<0||pos>=source.length||source.length==0){
+	         return "invalid parameters...";
+	     }
+	     var iBeginPos= 0, iEndPos=source.length;
+	     var sFrontPart=source.substr(iBeginPos,pos);
+	     var sTailPart=source.substr(pos+1,source.length);
+	     var sRet=sFrontPart+newChar+sTailPart;
+	     return sRet;
+	 }
+</script>
+</html>

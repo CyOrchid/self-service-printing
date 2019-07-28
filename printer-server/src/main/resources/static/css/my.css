@@ -1,0 +1,215 @@
+body, html {
+	height: 100%;
+	-webkit-tap-highlight-color: transparent;
+	font-family: -apple-system-font,"Helvetica Neue","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+	background-color: #F2F2F2;
+}
+
+
+body{overflow-x:hidden;background-color:#fbf9fe;}
+
+.infoDiv {
+	width: 100%;
+	position: relative;
+	overflow: hidden;
+/*	margin-left: -2px;
+	padding-right: 4px;
+	margin-top: -2px;*/
+}
+
+#bgG {
+	position: absolute;
+    height: 100%;
+    width: 100%;
+    background-repeat: no-repeat;
+    -webkit-background-size: 100% 100%;
+    background-size: 100%;
+    background-image: url(../images/touxiang.jpg);
+    background-position:center;
+
+}
+
+#bgS {
+	position: absolute;
+    height: 100%;
+    width: 100%;
+    background-repeat: no-repeat;
+    -webkit-background-size: 100% 100%;
+    background-size: 100%;
+    /*background-image: url(../images/touxiang.jpg);*/
+    background-position:center;
+}
+.blur {    
+    -webkit-filter: blur(6px); /* Chrome, Opera */
+       -moz-filter: blur(6px);
+        -ms-filter: blur(6px);    
+            filter: blur(6px);    
+}
+
+#mask {
+	position: absolute;
+	height: 1200px;
+	width: 1500px;
+	left: -20px;
+	top: -20px;
+	opacity: .5;
+	background-color: #000;
+
+
+}
+
+.infoContainer {
+	overflow: hidden;
+	width: 100%;
+	margin: 15px auto;
+	position: relative;
+	/*text-align: center;*/
+	/*background-color: yellow;*/
+	/*position: relative;*/
+	/*border: 1px solid transparent;*/
+}
+
+.pic {
+	width: 30%;
+	max-width: 96px;
+	margin: 5px auto;
+	/*background-image: url(../images/2048.png); */
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+	background-origin: content-box;
+	border: 2px solid #FFF;
+	display: block;
+	/* Avatar: */
+
+	box-shadow: 0px 3px 10px 0px rgba(0,0,0,0.97);
+
+
+}
+
+.name {
+	/*background-color: blue;*/
+	overflow-y: auto;
+	overflow-x: hidden; 
+	height: 25px;
+	line-height: 25px;
+	font-size: 20px;
+	text-align: center;
+	font-weight: bold;
+	color: #FFF;
+	margin-bottom: 5px;
+}
+
+.location {
+	display: table;
+	/*background-color: pink;*/
+	height: 26px;
+	line-height: 26px;
+	font-size: 14px;
+	text-align: center;
+	color: #FFF;
+	font-weight: 300;
+	/*display: inline-block;*/
+	margin-left: auto;
+	margin-right: auto;
+}
+
+
+.location img {
+	/*display: block;*/
+	width: 25px;
+	height: 25px;
+	/*vertical-align:middle;*/
+	float: left;
+	margin-right: 5px;
+}
+.location span {
+	/*display: block;*/
+	float:left;
+}
+
+.cover {
+	    -webkit-filter: blur(2px); 
+    -moz-filter: blur(2px);
+    -ms-filter: blur(2px);
+    filter: blur(2px);
+}
+
+.weui_cells {
+	font-size: 15px;
+}
+
+/*.send {
+	color: #09BB07;
+	float: right;
+}*/
+
+.weui_textarea_counter {
+	margin-bottom: 5px;
+}
+
+.weui_cells_button {
+	margin-bottom: 1.17647059em;
+}
+
+.weui_btn_default {
+	/*background-color: #09BB07;*/
+	background-color: #F2F2F2;
+	/*color: #C2C2C2;*/
+	color: #09BB07;
+	float: right;
+}
+
+/*.weui_btn_default.enable {
+	color: #09BB07;
+	float: right;
+}*/
+
+
+/*.weui_btn.weui_btn_mini {
+	padding: 0.3em;
+}
+*/
+
+.weui_textarea {
+	color: #09BB07;
+}
+
+.weui_input {
+	color: #09BB07;
+}
+
+.red {
+	color: red;
+}
+
+.sex { 
+	position: absolute;
+	z-index: 3;
+	width: 25px;
+	height: 25px;
+	bottom: 61px;
+
+	/*top: 0px;*/
+	/*left: 0px;*/
+}
+
+.sex img {
+	width: 100%;
+	height: 100%;
+	border-radius: 12.5px;
+	box-shadow: 0px 3px 10px 0px rgba(0,0,0,0.97);
+}
+
+
+.weui-select-modal .weui_cells {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	-webkit-overflow-scrolling: touch;
+}
+
+
+.weui_tabbar {
+	position: fixed;
+	left: 0px;
+	bottom: 0px;
+}

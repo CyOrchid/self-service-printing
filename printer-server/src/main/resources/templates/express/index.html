@@ -1,0 +1,347 @@
+<title>和苑帮</title>
+<div th:replace="public/header::html" ></div>  
+
+<script th:inline="javascript">
+
+
+</script>
+<script>
+    $(function(){
+          $(document).on("click","#btn",function(){
+        	var nameCheck = $("#name").val().trim();  
+        	if(nameCheck == "") {
+        		$.toptip("姓名不能为空！");
+        		$("#name").focus();
+        		return;
+        	}
+        	var phoneCheck = $("#phone").val().trim();
+        	if(phoneCheck == "") {
+        		$.toptip("手机号不能为空！");
+        		$("#phone").focus();
+        		return;
+        	}else {
+        		var myreg=/^[1][3,4,5,7,8][0-9]{9}$/;  
+                if (!myreg.test(phoneCheck)) {  
+              	  $.toptip("手机号格式错误！"); 
+              	  $("#phone").focus();
+        		  return;
+                }
+        	}
+        	
+        	for(var i=0; i<3; i++) {
+        		if($("#code-"+i).length >0) {
+        			var codeCheck = $("#code-"+i).val().trim();
+                	if(codeCheck == "") {
+                		$.toptip("取件码不能为空！");
+                		$("#code-"+i).focus();
+                		return;
+                	}
+        		}
+        	}
+        	
+        	var roomCheck = $("#room").val().trim();
+        	if(roomCheck == "") {
+        		$.toptip("房间号不能为空！");
+        		$("#room").focus();
+        		return;
+        	}
+        	
+       	   var check = $("input[type='checkbox']").is(':checked');
+       		if(!check){
+       		 	$.toptip("请勾选“阅读并同意《快递上门相关条款》”");
+                return false;
+       		}else{
+       			$('#remark').val($('#remarktext').val());
+       			console.log($("#addlist").serialize());
+       			$.post("/express/saveExpress", $("#addlist").serialize(), function(data) {
+       				if(data.ret == -1){
+       					$.toptip(data.msg);
+       	                return false;
+       				}else{
+       					$.toptip("提交成功",'success');
+                        window.location.assign("/express/order?price="+data.data.cost+"&tradeNo="+data.data.tradeNo);
+       				}
+    			},'json');
+              }
+          });
+          
+          $("#securityCode").blur(function(){
+        	  var securityCode = $('#securityCode').val();
+        	  $.post("/checkVerify", $("#securityCode").serialize(), function(data) {
+  				if(!data){
+  					$.toptip("验证码输入有误！");
+  				}
+  			});
+          });
+          
+          $("#phone").blur(function(){
+        	  var phoneNum = $('#phone').val();
+        	  if(phoneNum == "") {
+        		  return;
+        	  }
+        	  var myreg=/^[1][3,4,5,7,8][0-9]{9}$/;  
+              if (!myreg.test(phoneNum)) {  
+            	  $.toptip("手机号格式错误！"); 
+            	  $("#phone").focus();
+              }
+          });
+
+    });
+    var countdown=60;
+
+    function getcode(){
+        $("#code").attr("src","../getVerify?"+Math.random());
+    }
+
+    function textarea(input) {
+        var content = $(input);
+          var max =  content.next().find('i') .text();
+        var value = content.val();
+        if (value.length>0) {
+
+            value = value.replace(/\n|\r/gi,"");
+            var len = value.length;
+            content.next().find('span').text(len) ;
+             if(len>max){
+                 content.next().addClass('f-red');
+             }else{
+                 content.next().removeClass('f-red');
+             }
+        }
+    }
+
+    function cleararea(obj){
+        $(obj).prev().find('.weui-textarea').val("");
+        return false;
+    }
+
+</script>
+</head>
+<body>
+<marquee class="slide slide-m" style="color:green">
+新用户免费代取三次~
+</marquee>
+    <form id="addlist" class="weui-cells" style="margin-top:0;">
+   		<input type="hidden" name="openId" th:value="${userInfo.openid}">
+	    <div class="weui-cell">
+	        <div class="weui-cell__hd"><label class="weui-label">姓名</label></div>
+	        <div class="weui-cell__bd">
+	            <!-- <input class="weui-input" pattern="[0-9]*" placeholder="请输入收件人姓名" type="text" th:value="${nickname}" name="name"> -->
+	            <input id="name" class="weui-input" pattern="[0-9]*" placeholder="请输入收件人姓名" type="text" name="name">
+	        </div>
+	    </div>
+	    <div class="weui-cell">
+	        <div class="weui-cell__hd">
+	            <label class="weui-label">手机号</label>
+	        </div>
+	        <div class="weui-cell__bd">
+	            <input id="phone" class="weui-input"  pattern="[0-9]*" placeholder="请输入收件人手机号" type="text" name="phone" oninput = "value=value.replace(/[^\d]/g,'')" maxlength="11">
+	        </div>
+	    </div>
+	    <div id="list-0"　class="weui-cell code">
+	        <div class="weui-cell__hd"><label class="weui-label">取件码</label></div>
+	        <div class="weui-cell__bd">
+	            <input id="code-0" class="weui-input" placeholder="示例：X-X-XXXX" oninput = "value=value.replace(/[^\d-]/g,'')" type="text" name="code" maxlength="10">
+	        </div>
+	        <span id="expressCodeAdd" class="icon icon-36" onclick="addlist()"></span>
+	    </div>
+	    <div class="weui-cell">
+	        <div class="weui-cell__hd"><label for="name" class="weui-label">上门地址</label></div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" id="area" type="text" value="" placeholder="请选择区域" name="area">
+            </div>
+	        <div class="weui-cell__bd">
+	            <input id="room" class="weui-input" pattern="[0-9]*" placeholder="请输入房号" oninput = "value=value.replace(/[^\d]/g,'')" type="text" name="room" maxlength="4" >
+	        </div>
+	    </div>
+	    <div class="weui-cell">
+            <div class="weui-cell__hd"><label for="time4" class="weui-label">上门日期</label></div>
+            <div class="weui-cell__bd">
+                <!-- <input class="weui-input" id="time4" type="text" value="2019年02月29日 13时14分" name="deliveryTimeStr"> -->
+            	<div class="">
+		            <input class="weui-form-checkbox"  name="date"  id="f1" value="today" type="radio" checked>
+		            <label for="f1" >
+		                <i class="weui-icon-radio"></i>
+		                <div class="weui-form-text"><p>今天</p></div>
+		            </label>
+		            <input class="weui-form-checkbox"  name="date"  id="f2" value="tomorrow" type="radio">
+		            <label for="f2" >
+		                <i class="weui-icon-radio"></i>
+		                <div class="weui-form-text"><p>明天</p></div>
+		            </label>
+		        </div>
+            </div>
+        </div>
+         <div class="weui-cell">
+            <div class="weui-cell__hd"><label class="weui-label">上门时间</label></div>
+            <div class="weui-cell__bd">
+		         <input class="weui-input" id="time" type="text" value="21：30 - 22：00" placeholder="请选择时间范围" name="time">
+            </div>
+        </div>
+	    <div class="weui-cell">
+	        <div class="weui-cell__bd">
+	            <textarea id="remarktext" class="weui-textarea" placeholder="备注" rows="3" onkeyup="textarea(this);"></textarea>
+	            <div class="weui-textarea-counter"><span>0</span>/<i>80</i></div>
+	        </div>
+	        <i class="weui-icon-clear" onclick="cleararea(this)"></i>
+	        <input type="hidden" name="remark" id="remark" value="" >
+	    </div>
+	    <div class="weui-cell weui-cell_vcode">
+	        <div class="weui-cell__hd"><label class="weui-label">验证码</label></div>
+	        <div class="weui-cell__bd">
+	            <input id="securityCode" class="weui-input" placeholder="请输入验证码" type="text" name="securityCode" oninput = "value=value.replace(/[^\d]/g,'')" maxlength="4">
+	        </div>
+	        <div class="weui-cell__ft">
+	            <img id="code" class="weui-vcode-img" src="../getVerify" width="130" height="53" onclick="getcode(this);">
+	        </div>
+	    </div>
+	    <span for="weuiAgree" class="weui-agree">
+		    <input id="weuiAgree" class="weui-agree__checkbox" type="checkbox">
+		    <span>阅读并同意</span>
+		    <span class="weui-agree__text">
+		         <a href="../express/clause.html">《代取快递服务说明》</a>
+		    </span>
+		</span>
+		 
+	</form>
+	<div class="weui-btn-area">
+	    <button class="weui-btn weui-btn_disabled weui-btn_primary" id="btn" disabled="true">确定</button>
+	</div>
+	
+<br>
+<br>
+<div class="weui-footer">
+    <p class="weui-footer__links">
+        <a href="../express/clause.html" class="weui-footer__link">《代取快递服务说明》</a>
+    </p>
+    <p class="weui-footer__text">Copyright &copy; 2019 TendWonder. All right reserved.</p>
+</div>
+</body>
+<script>
+
+   /* 添加行数据*/
+    function addlist(){
+        var n = $(".code").length;
+        if(n==0){
+            var i=1;
+        }else{
+            var str = $(".code:last").attr("id");
+          str=  str.split('-');
+          str=str[1];
+            var  i=  　　parseInt(str);
+            i=i+1;
+        }
+        if(i>=3) {
+        	$.toptip("最多只能添加三条！"); 
+        	return;
+        }
+        var tpl='<div id="list-'+i+'" class="weui-cell code" >'+
+        	'<div class="weui-cell__hd"><label class="weui-label">取件码</label></div>'+
+        	'<div class="weui-cell__bd">'+
+		        '<input id="code-'+i+'" class="weui-input" placeholder="示例：X-X-XXXX" oninput = "value=value.replace(/[^\d-]/g,\"\")" type="text" name="code" maxlength="10">'+
+		    '</div>'+
+        	'<span class="icon icon-122" onclick="dellist(this)"></span>'+
+        '</div>';
+        $('#list-'+str).after(tpl);
+    }
+    /*删除行数据*/
+    function dellist(obj){
+        $(obj).parent().remove();
+    }
+</script>
+<script th:inline="javascript">
+
+	$('#weuiAgree').click(function(){
+		var checked = $("input[type='checkbox']").is(':checked');
+		if(checked){
+			$("#btn").removeClass("weui-btn_disabled");
+			$("#btn").removeAttr("disabled");
+		}else {
+			$("#btn").addClass("weui-btn_disabled");
+			$("#btn").attr("disabled", "true");
+		}
+	})
+
+	$("#area").picker({
+	    title: "上门地址",
+	    cols: [
+	        {
+	            textAlign: 'center',
+	            values: ['萝岗和苑', '棠悦花园','棠德花苑','榕悦花园']
+	        },
+	        {
+	            textAlign: 'center',
+	            values: ['H1','H2','H3','H4','H5','H6','H7','H8','H9','H10','H11','H12','H13','H14','H15','H16','H17','H18']
+	        }
+	    ]
+	});
+
+	$("#time").picker({
+	    title: "上门时间",
+	    cols: [
+	        {
+	            textAlign: 'center',
+	            values: ['21：00 - 21：30', '21：30 - 22：00','22：00 - 22：30','22：30 - 23：00']
+	        }
+	    ]
+	});
+	
+	$("#time4").datetimePicker({
+        title: '上门日期',
+        yearSplit: '年',
+        monthSplit: '月',
+        dateSplit: '日',
+        times: function () {
+            return [  // 自定义的时间
+                {
+                    values: (function () {
+                        var hours = [9,10,11,12];
+                        /* for (var i=0; i<24; i++) hours.push(i > 9 ? i : '0'+i); */
+                        return hours;
+                    })()
+                },
+                {
+                    divider: true,  // 这是一个分隔符
+                    content: '时'
+                },
+                {
+                    values: (function () {
+                        var minutes = ['0-30', '30-60'];
+                       /*  for (var i=0; i<59; i++) minutes.push(i > 9 ? i : '0'+i); */
+                        return minutes;
+                    })()
+                },
+                {
+                    divider: true,  // 这是一个分隔符
+                    content: '分'
+                }
+            ];
+        },
+        min: "1990-12-12",
+        max: "2022-12-12 12:12",
+        onChange: function (picker, values, displayValues) {
+            console.log(values);
+        }
+    });
+	var filePathArr = [];
+	var totalPay;
+	
+	$(document).ready(function() {
+		var expressCount = [[${userInfo.expressCount}]];
+		if(expressCount < 3) {
+			$("#expressCodeAdd").hide();
+		}
+		
+		$("#formSubmitBtn").on("click", function() {
+			$.post("/prePrint", $("#printForm").serialize(), function(data) {
+				
+			});
+			var printedCode = $("#printerCode").val();
+			var tradeNo = $("input[name='tradeNo']").val();
+			window.location.assign("");
+		});
+		
+	});
+	
+</script>
+</html>
